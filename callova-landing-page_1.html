@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Callova — Your 24/7 AI Receptionist</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f7f3ee;
+    --warm-white: #faf8f5;
+    --black: #0c0b09;
+    --charcoal: #1c1a17;
+    --charcoal2: #252320;
+    --gold: #b8965a;
+    --gold-light: #d4b07a;
+    --muted: #8a8278;
+    --border: rgba(184,150,90,0.15);
+    --border-dark: #2a2720;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--cream);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+  }
+
+  /* subtle noise texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 28px 64px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(12,11,9,0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 300;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--cream);
+  }
+  .nav-logo span { color: var(--gold); }
+  .nav-links {
+    display: flex;
+    gap: 48px;
+    align-items: center;
+  }
+  .nav-links a {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.3s;
+    font-weight: 400;
+  }
+  .nav-links a:hover { color: var(--cream); }
+  .nav-cta {
+    border: 1px solid var(--gold) !important;
+    color: var(--gold) !important;
+    padding: 10px 28px !important;
+    transition: background 0.3s, color 0.3s !important;
+  }
+  .nav-cta:hover {
+    background: var(--gold) !important;
+    color: var(--black) !important;
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 180px 64px 120px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-line {
+    position: absolute;
+    top: 0; bottom: 0;
+    right: 42%;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, var(--border) 30%, var(--border) 70%, transparent);
+    pointer-events: none;
+  }
+
+  .hero-glow {
+    position: absolute;
+    top: 20%; right: 10%;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(184,150,90,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 48px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.2s;
+  }
+  .tag-line {
+    width: 40px;
+    height: 1px;
+    background: var(--gold);
+  }
+  .tag-text {
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 400;
+  }
+
+  .hero h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(56px, 8vw, 104px);
+    font-weight: 300;
+    line-height: 1.0;
+    letter-spacing: -1px;
+    margin-bottom: 40px;
+    max-width: 800px;
+    opacity: 0;
+    animation: fadeUp 0.9s ease forwards 0.35s;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-sub {
+    font-size: 15px;
+    color: var(--muted);
+    max-width: 440px;
+    line-height: 1.9;
+    margin-bottom: 56px;
+    letter-spacing: 0.3px;
+    opacity: 0;
+    animation: fadeUp 0.9s ease forwards 0.5s;
+  }
+
+  .hero-ctas {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    opacity: 0;
+    animation: fadeUp 0.9s ease forwards 0.65s;
+  }
+
+  .btn-primary {
+    background: var(--gold);
+    color: var(--black);
+    padding: 16px 44px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 1px solid var(--gold);
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s;
+    display: inline-block;
+  }
+  .btn-primary:hover {
+    background: transparent;
+    color: var(--gold);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--cream);
+    padding: 16px 44px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 1px solid rgba(247,243,238,0.15);
+    cursor: pointer;
+    transition: border-color 0.3s;
+    display: inline-block;
+  }
+  .btn-secondary:hover { border-color: rgba(247,243,238,0.4); }
+
+  .hero-stats {
+    display: flex;
+    gap: 0;
+    margin-top: 96px;
+    border-top: 1px solid var(--border);
+    opacity: 0;
+    animation: fadeUp 0.9s ease forwards 0.8s;
+  }
+  .stat-item {
+    padding: 36px 48px 0 0;
+    margin-right: 48px;
+    border-right: 1px solid var(--border);
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 52px;
+    font-weight: 300;
+    color: var(--cream);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .stat-num span { color: var(--gold); }
+  .stat-label {
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  /* SECTIONS */
+  .section {
+    padding: 140px 64px;
+    border-top: 1px solid var(--border-dark);
+    position: relative;
+    z-index: 1;
+  }
+
+  .section-tag {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .section-tag span {
+    font-size: 9px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 400;
+  }
+  .section-tag::after {
+    content: '';
+    width: 32px;
+    height: 1px;
+    background: var(--gold);
+    opacity: 0.5;
+  }
+
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(40px, 5vw, 72px);
+    font-weight: 300;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+    margin-bottom: 20px;
+    max-width: 680px;
+  }
+  .section-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .section-sub {
+    font-size: 14px;
+    color: var(--muted);
+    max-width: 480px;
+    line-height: 1.9;
+    margin-bottom: 72px;
+    letter-spacing: 0.2px;
+  }
+
+  /* PROBLEMS */
+  .problems-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border-dark);
+  }
+  .problem-item {
+    background: var(--black);
+    padding: 48px 44px;
+    transition: background 0.3s;
+  }
+  .problem-item:hover { background: var(--charcoal); }
+  .problem-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    margin-bottom: 24px;
+    font-weight: 400;
+  }
+  .problem-item h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px;
+    font-weight: 400;
+    margin-bottom: 14px;
+    color: var(--cream);
+    letter-spacing: 0.3px;
+  }
+  .problem-item p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.9;
+  }
+
+  /* STEPS */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border-dark);
+  }
+  .step {
+    background: var(--black);
+    padding: 44px 36px;
+    transition: background 0.3s;
+  }
+  .step:hover { background: var(--charcoal); }
+  .step-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 72px;
+    font-weight: 300;
+    color: rgba(184,150,90,0.12);
+    line-height: 1;
+    margin-bottom: 24px;
+  }
+  .step h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 400;
+    margin-bottom: 12px;
+    color: var(--cream);
+  }
+  .step p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.9;
+  }
+
+  /* TESTIMONIAL */
+  .testimonial-section {
+    padding: 120px 64px;
+    border-top: 1px solid var(--border-dark);
+    border-bottom: 1px solid var(--border-dark);
+    text-align: center;
+    background: var(--charcoal);
+    position: relative;
+    overflow: hidden;
+  }
+  .testimonial-section::before {
+    content: '\201C';
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 300px;
+    color: rgba(184,150,90,0.04);
+    position: absolute;
+    top: -60px; left: 50%;
+    transform: translateX(-50%);
+    line-height: 1;
+    pointer-events: none;
+  }
+  .testimonial-quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: clamp(22px, 3.5vw, 38px);
+    font-weight: 300;
+    line-height: 1.5;
+    max-width: 780px;
+    margin: 0 auto 40px;
+    color: var(--cream);
+    position: relative;
+    z-index: 1;
+  }
+  .testimonial-divider {
+    width: 40px;
+    height: 1px;
+    background: var(--gold);
+    margin: 0 auto 24px;
+  }
+  .testimonial-author {
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 400;
+  }
+
+  /* PRICING */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1px;
+    background: var(--border-dark);
+    max-width: 860px;
+  }
+  .price-card {
+    background: var(--charcoal);
+    padding: 56px 48px;
+    position: relative;
+    transition: background 0.3s;
+  }
+  .price-card:hover { background: var(--charcoal2); }
+  .price-card.featured {
+    background: var(--charcoal2);
+    border: 1px solid var(--gold);
+  }
+  .price-badge {
+    position: absolute;
+    top: -1px; right: 40px;
+    background: var(--gold);
+    color: var(--black);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 5px 14px;
+  }
+  .price-name {
+    font-size: 9px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 24px;
+    font-weight: 400;
+  }
+  .price-amount {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 72px;
+    font-weight: 300;
+    line-height: 1;
+    margin-bottom: 6px;
+    color: var(--cream);
+  }
+  .price-amount sup {
+    font-size: 28px;
+    vertical-align: top;
+    margin-top: 16px;
+    display: inline-block;
+    color: var(--gold);
+  }
+  .price-label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 40px;
+    letter-spacing: 0.5px;
+  }
+  .price-divider {
+    width: 100%;
+    height: 1px;
+    background: var(--border-dark);
+    margin-bottom: 32px;
+  }
+  .price-features { list-style: none; margin-bottom: 44px; }
+  .price-feature {
+    font-size: 12px;
+    color: var(--muted);
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    letter-spacing: 0.3px;
+  }
+  .price-feature::before {
+    content: '—';
+    color: var(--gold);
+    flex-shrink: 0;
+    font-size: 10px;
+  }
+  .price-btn {
+    display: block;
+    text-align: center;
+    padding: 15px;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid rgba(184,150,90,0.3);
+    color: var(--gold);
+    transition: background 0.3s, color 0.3s;
+    cursor: pointer;
+    background: transparent;
+    font-family: 'Montserrat', sans-serif;
+    width: 100%;
+  }
+  .price-btn:hover { background: var(--gold); color: var(--black); }
+  .price-card.featured .price-btn {
+    background: var(--gold);
+    color: var(--black);
+    border-color: var(--gold);
+  }
+  .price-card.featured .price-btn:hover { background: var(--gold-light); }
+
+  /* FAQ */
+  .faq-list { max-width: 680px; }
+  .faq-item {
+    border-bottom: 1px solid var(--border-dark);
+    padding: 32px 0;
+    cursor: pointer;
+  }
+  .faq-q {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 400;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    color: var(--cream);
+    letter-spacing: 0.2px;
+  }
+  .faq-arrow {
+    color: var(--gold);
+    font-size: 18px;
+    flex-shrink: 0;
+    transition: transform 0.3s;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 300;
+  }
+  .faq-item.open .faq-arrow { transform: rotate(45deg); }
+  .faq-a {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.9;
+    margin-top: 18px;
+    display: none;
+    letter-spacing: 0.2px;
+  }
+  .faq-item.open .faq-a { display: block; }
+
+  /* CONTACT */
+  .cta-section {
+    padding: 140px 64px;
+    border-top: 1px solid var(--border-dark);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 100px;
+    align-items: start;
+  }
+  .cta-left h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(40px, 5vw, 68px);
+    font-weight: 300;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+    margin-bottom: 24px;
+  }
+  .cta-left h2 em { font-style: italic; color: var(--gold); }
+  .cta-left p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.9;
+    max-width: 380px;
+  }
+
+  .contact-form { display: flex; flex-direction: column; gap: 1px; background: var(--border-dark); }
+  .form-input {
+    background: var(--charcoal);
+    border: none;
+    color: var(--cream);
+    padding: 20px 24px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+    outline: none;
+    transition: background 0.3s;
+    width: 100%;
+  }
+  .form-input:focus { background: var(--charcoal2); }
+  .form-input::placeholder { color: var(--muted); }
+  select.form-input { cursor: pointer; }
+  select.form-input option { background: var(--charcoal); }
+  .form-submit {
+    background: var(--gold);
+    color: var(--black);
+    border: none;
+    padding: 20px 44px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.3s;
+    align-self: flex-start;
+    margin-top: 8px;
+  }
+  .form-submit:hover { background: var(--gold-light); }
+
+  /* FOOTER */
+  footer {
+    padding: 48px 64px;
+    border-top: 1px solid var(--border-dark);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+  .footer-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 300;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+  .footer-logo span { color: var(--gold); }
+  .footer-copy { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
+  .footer-email {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--gold);
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+  .footer-email:hover { color: var(--gold-light); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 900px) {
+    nav { padding: 20px 28px; }
+    .nav-links { display: none; }
+    .hero { padding: 140px 28px 80px; }
+    .section { padding: 100px 28px; }
+    .steps { grid-template-columns: 1fr 1fr; }
+    .problems-grid { grid-template-columns: 1fr; }
+    .cta-section { grid-template-columns: 1fr; gap: 48px; padding: 80px 28px; }
+    .hero-stats { flex-wrap: wrap; gap: 32px; }
+    .stat-item { border-right: none; padding-right: 0; margin-right: 0; }
+    footer { padding: 36px 28px; }
+    .testimonial-section { padding: 80px 28px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">Call<span>ova</span></div>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+    <a href="#contact" class="nav-cta">Book a Demo</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-line"></div>
+  <div class="hero-glow"></div>
+
+  <div class="hero-tag">
+    <div class="tag-line"></div>
+    <div class="tag-text">AI Receptionist — Available 24 / 7</div>
+  </div>
+
+  <h1>Your business<br>deserves to answer<br><em>every call.</em></h1>
+
+  <p class="hero-sub">Callova provides local service businesses with an intelligent AI receptionist that answers calls, books appointments, and captures every lead — around the clock, without fail.</p>
+
+  <div class="hero-ctas">
+    <a href="#contact" class="btn-primary">Book a Free Demo</a>
+    <a href="#how" class="btn-secondary">See How It Works</a>
+  </div>
+
+  <div class="hero-stats">
+    <div class="stat-item">
+      <div class="stat-num">24<span>/7</span></div>
+      <div class="stat-label">Always Available</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num"><span>€</span>299</div>
+      <div class="stat-label">From Per Month</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">0<span>%</span></div>
+      <div class="stat-label">Missed Calls</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">1<span>day</span></div>
+      <div class="stat-label">To Go Live</div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="problem">
+  <div class="section-tag"><span>The Problem</span></div>
+  <h2 class="section-title">Every missed call<br>is <em>lost revenue.</em></h2>
+  <p class="section-sub">Local businesses lose thousands each month to unanswered calls, slow follow-ups, and after-hours enquiries that go nowhere.</p>
+  <div class="problems-grid">
+    <div class="problem-item">
+      <div class="problem-num">01</div>
+      <h3>Missed Calls After Hours</h3>
+      <p>Customers call in the evening when you are closed. Without an answer, they move to your competitor. Callova picks up every time, regardless of the hour.</p>
+    </div>
+    <div class="problem-item">
+      <div class="problem-num">02</div>
+      <h3>No One Available to Book</h3>
+      <p>Your staff are occupied with the actual work. Callova handles appointment scheduling automatically — collecting name, service, date and time on your behalf.</p>
+    </div>
+    <div class="problem-item">
+      <div class="problem-num">03</div>
+      <h3>The Cost of a Receptionist</h3>
+      <p>A full-time front desk employee costs €2,000 or more per month. Callova delivers the same result at a fraction of that cost, with zero downtime.</p>
+    </div>
+    <div class="problem-item">
+      <div class="problem-num">04</div>
+      <h3>Customers Left Waiting</h3>
+      <p>Nobody waits on hold. Callova answers instantly, handles the most common enquiries, and escalates complex matters directly to you.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="how">
+  <div class="section-tag"><span>How It Works</span></div>
+  <h2 class="section-title">Live within<br><em>twenty-four hours.</em></h2>
+  <p class="section-sub">We manage the entire setup. You provide your business details — we handle everything else.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <h3>We Build Your Agent</h3>
+      <p>A custom AI receptionist trained on your business — your services, pricing, hours, and frequently asked questions.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <h3>You Forward Your Number</h3>
+      <p>Five minutes. Your existing phone number remains unchanged — calls simply route through to your AI receptionist.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <h3>Callova Handles Everything</h3>
+      <p>Bookings, pricing queries, opening hours, job status — your agent manages it all and sends you a full summary of each call.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <h3>You Focus on the Work</h3>
+      <p>No more interruptions. No more missed opportunities. Every lead captured, every appointment booked, automatically.</p>
+    </div>
+  </div>
+</section>
+
+<div class="testimonial-section">
+  <p class="testimonial-quote">"We were losing three or four bookings a week to missed after-hours calls. Since Callova, every single one is captured automatically."</p>
+  <div class="testimonial-divider"></div>
+  <div class="testimonial-author">Auto Repair Shop Owner — Satisfied Callova Client</div>
+</div>
+
+<section class="section" id="pricing">
+  <div class="section-tag"><span>Pricing</span></div>
+  <h2 class="section-title">Simple,<br><em>transparent pricing.</em></h2>
+  <p class="section-sub">No setup fees. No long-term contracts. Cancel at any time. A single recovered booking covers the entire monthly cost.</p>
+  <div class="pricing-grid">
+    <div class="price-card">
+      <div class="price-name">Starter</div>
+      <div class="price-amount"><sup>€</sup>299</div>
+      <div class="price-label">per month — single location</div>
+      <div class="price-divider"></div>
+      <ul class="price-features">
+        <li class="price-feature">24/7 AI phone receptionist</li>
+        <li class="price-feature">Appointment booking</li>
+        <li class="price-feature">Pricing & FAQ handling</li>
+        <li class="price-feature">After-hours lead capture</li>
+        <li class="price-feature">Monthly call summary report</li>
+      </ul>
+      <a href="#contact" class="price-btn">Get Started</a>
+    </div>
+    <div class="price-card featured">
+      <div class="price-badge">Most Popular</div>
+      <div class="price-name">Growth</div>
+      <div class="price-amount"><sup>€</sup>499</div>
+      <div class="price-label">per month — up to three locations</div>
+      <div class="price-divider"></div>
+      <ul class="price-features">
+        <li class="price-feature">Everything in Starter</li>
+        <li class="price-feature">SMS follow-up & reminders</li>
+        <li class="price-feature">Job status update system</li>
+        <li class="price-feature">Custom escalation alerts</li>
+        <li class="price-feature">Priority support</li>
+      </ul>
+      <a href="#contact" class="price-btn">Get Started</a>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="faq">
+  <div class="section-tag"><span>FAQ</span></div>
+  <h2 class="section-title">Frequently asked<br><em>questions.</em></h2>
+  <div class="faq-list">
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">Does it sound like a real person? <span class="faq-arrow">+</span></div>
+      <div class="faq-a">Yes. Callova uses the latest AI voice technology. The voice is natural, warm and professional. Most callers cannot distinguish it from a human receptionist.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">Do I need to change my phone number? <span class="faq-arrow">+</span></div>
+      <div class="faq-a">No. You keep your existing number. We configure call forwarding so Callova answers on your behalf. The process takes approximately five minutes.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">What happens with questions it cannot answer? <span class="faq-arrow">+</span></div>
+      <div class="faq-a">Callova handles the most common 80% of calls with confidence. For anything more complex, it takes the caller's details and sends you an immediate notification to follow up.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">How long does setup take? <span class="faq-arrow">+</span></div>
+      <div class="faq-a">Your AI receptionist can be live within 24 hours of signing up. We manage the entire setup — you simply provide your business information.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">Is there a long-term contract? <span class="faq-arrow">+</span></div>
+      <div class="faq-a">No. Month-to-month only. Cancel at any time. We are confident in what Callova delivers and do not rely on locking clients in.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">Which types of business does this suit? <span class="faq-arrow">+</span></div>
+      <div class="faq-a">Any service business that relies on incoming calls — auto repair shops, dental clinics, law firms, beauty salons, physiotherapy practices, and more.</div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section" id="contact">
+  <div class="cta-left">
+    <div class="section-tag"><span>Get in Touch</span></div>
+    <h2>Ready to stop<br>missing calls <em>forever?</em></h2>
+    <p style="margin-top:24px;">Complete the form and we will arrange a free demonstration — you will hear your AI receptionist live before committing to anything.</p>
+  </div>
+  <form class="contact-form" action="https://formspree.io/f/xrevpjzb" method="POST">
+    <input type="text" name="name" class="form-input" placeholder="Your name" required>
+    <input type="text" name="business" class="form-input" placeholder="Business name" required>
+    <input type="email" name="email" class="form-input" placeholder="Email address" required>
+    <input type="tel" name="phone" class="form-input" placeholder="Phone number">
+    <select name="business_type" class="form-input">
+      <option value="" disabled selected>Type of business</option>
+      <option>Auto repair shop</option>
+      <option>Dental clinic</option>
+      <option>Law firm</option>
+      <option>Beauty salon</option>
+      <option>Physiotherapy clinic</option>
+      <option>Other</option>
+    </select>
+    <button type="submit" class="form-submit">Book Free Demo →</button>
+  </form>
+</section>
+
+<footer>
+  <div class="footer-logo">Call<span>ova</span></div>
+  <div class="footer-copy">© 2026 Callova. All rights reserved.</div>
+  <a href="mailto:info@callova.co" class="footer-email">info@callova.co</a>
+</footer>
+
+<script>
+function toggleFaq(el) { el.classList.toggle('open'); }
+function submitForm() { alert("Thank you. We will be in touch within 24 hours to arrange your free demonstration."); }
+</script>
+</body>
+</html>
